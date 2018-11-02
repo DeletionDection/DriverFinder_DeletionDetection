@@ -13,7 +13,7 @@ Execution:
 <br>Windows or Mac environment
 <br>===============================
 <br> 1. Make sure that Python 3.x is installed.
-<br> 2. Download source code.
+<br> 2. Download DriverFinder_src folder for source code and required files.
 <br> 3. Run the DriverFinder top level code 'DriverFinder_5.2.py'. 
 <br><br>
 DriverFinder screentshot
