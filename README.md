@@ -1,15 +1,28 @@
 # DriverFinder_DeletionDetection
 <b>DriverFinder</b>
-
-Installation: 
-<br>1. download all 3 files (DriverFinder_5.2_zip.exe, DriverFinder_5.2_zip.7z.001, & DriverFinder_5.2_zip.7z.002) under the 'DriverFinder_exe' folder
-<br> 2. run the 'DriverFinder_5.2_zip.exe' code to install the application. During the installation, the system will ask the user to provide a folder for the application to be installed.
+<br>Windows environment
+<br>===============================
+<br>Installation: 
+<br> 1. Download all 3 files (DriverFinder_5.2_zip.exe, DriverFinder_5.2_zip.7z.001, & DriverFinder_5.2_zip.7z.002) under the 'DriverFinder_exe' folder.
+<br> 2. Run the 'DriverFinder_5.2_zip.exe' code to install the application. During the installation, the system will ask the user to provide a folder for the application to be installed.
 <br><br>
 Execution: 
 <br>run the 'DriverFinder.exe' code under the folder where the application is installed.
 <br><br>
 DriverFinder screentshot
 <br><image src="driverfinder.png" width="500">
+
+<br><br>
+<b>ChimericSeq_del</b>
+<br>Windows environment
+<br>===============================
+<br>Installation: 
+<br> 1. Download all 7 files (ChimericSeq_del_v2_zip.exe, ChimericSeq_del_v2_zip.7z.001, ChimericSeq_del_v2_zip.7z.002, ChimericSeq_del_v2_zip.7z.003, ChimericSeq_del_v2_zip.7z.004, ChimericSeq_del_v2_zip.7z.005,  ChimericSeq_del_v2_zip.7z.006) under the 'ChimericSeq_del_exe' folder
+<br> 2. Run the 'ChimericSeq_del_v2_zip.exe' code to install the application. During the installation, the system will ask the user to provide a folder for the application to be installed.
+<br><br>
+Execution: 
+<br>run the 'ChimericSeq_del.exe' code under the folder where the application is installed.
+<br><br>
 
 ChimericSeq_del screenshot
 <br><image src="ChimericSeq_del.png" width="700">
