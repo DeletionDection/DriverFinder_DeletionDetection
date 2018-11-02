@@ -34,7 +34,7 @@ Execution:
 <br>Windows or Mac environment
 <br>===============================
 <br> 1. Make sure that Python 3.x is installed.
-<br> 2. Download source code.
+<br> 2. Download source code 'ChimericSeq_del_v2.py'.
 <br> 3. Run 'ChimericSeq_del_v2.py' code. 
 <br><br>
 ChimericSeq_del screenshot
