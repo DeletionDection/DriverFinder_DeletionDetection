@@ -4,7 +4,7 @@ Created on Thu Aug 20 15:46:04 2015
 
 @author: JBSUSER
 
- Copyright 2015-2018
+ Copyright 2015-2017
 
  ChimericSeq is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -18,12 +18,7 @@ Created on Thu Aug 20 15:46:04 2015
 
  You may review the GNU General Public License from <http://www.gnu.org/licenses/>.
 
-"""
 
-"""
- History:
- 08/10/2018: changed code to disable alignment overlapping for large deletion
-             detection
 """
 
 import subprocess,os,math,re,sys,zipfile,datetime,multiprocessing,webbrowser,threading,traceback,time,csv
@@ -73,6 +68,9 @@ class Core:
     ntUnidentifiedCount=10
     readDir=''
     useBasic=False
+    disableSimilarityCheck=False
+    disableOverlapAlignment=False
+    removeSplitFiles=False
     GeneData=None
     FocusData=None
     ChromList=None
@@ -86,7 +84,7 @@ class Core:
     YESNO=None
     paired=False
     loadAlignments=False #change to false in final code
-    overlapRequested=False
+    overlapRequested=True
     Na=115
     HostPrefix='humanRef'
     viralPrefix='viralRef'
@@ -368,7 +366,7 @@ class Core:
                     self.printToLog('Paired = False')
                 self.batchfilesloc = self.readDir
                 self.batchfiles = os.listdir(self.readDir)
-                indices = [i for i, s in enumerate(self.batchfiles) if '.DS' in s or (('fq' not in s) and ('fastq' not in s))]
+                indices = [i for i, s in enumerate(self.batchfiles) if '.DS' in s or 'fq' not in s]
                 for x in reversed(indices):
                     self.batchfiles.pop(x)
                 self.batchfileslength = len(self.batchfiles)
@@ -435,6 +433,21 @@ class Core:
                                 self.processLargeFileIndex += 1
                             if self.processLargeFileIndex > self.splitFileCount:
                                 self.processLargeFileIndex = 1
+                            old_processLargeFileIndex = self.processLargeFileIndex - 1
+
+                            # remove old split file
+                            if old_processLargeFileIndex > 0 and self.removeSplitFiles:
+                                old_file1 = self.processLargeFileDir+"/"+file1.replace("%", str(old_processLargeFileIndex))
+                                if os.path.exists(old_file1):
+                                    os.remove(old_file1)
+                                if self.splitFile2 != None:
+                                    old_file2=self.processLargeFileDir+"/"+file2.replace("%", str(old_processLargeFileIndex))
+                                    if os.path.exists(old_file2):
+                                        os.remove(old_file2)
+                                else:
+                                    file2=None
+
+                            # construct new file
                             file1=self.processLargeFileDir+"/"+file1.replace("%", str(self.processLargeFileIndex))
                             if self.splitFile2 != None:
                                 file2=self.processLargeFileDir+"/"+file2.replace("%", str(self.processLargeFileIndex))
@@ -1207,9 +1220,13 @@ class Core:
             cnt +=1
             if (cnt % showReadsCount) == 0: # display the progres
                 self.printToLog("reads processed "+str(cnt)+" of "+str(readsCount))
+                self.app.log.update()
+                time.sleep(1)
             if (cnt % readsCount) == 0: # one small file done
                 handle.close()
                 self.printToLog("Wrote %i records to %s" % (cnt, filename))
+                self.app.log.update()
+                time.sleep(1)
                 file_count1 += 1
                 b="_"+str(file_count1)
                 c='_1.fastq'
@@ -1238,9 +1255,13 @@ class Core:
                 cnt +=1
                 if (cnt % showReadsCount) == 0: # display the progres
                     self.printToLog("reads processed "+str(cnt)+" of "+str(readsCount))
+                    self.app.log.update()
+                    time.sleep(1)
                 if (cnt % readsCount) == 0: # one small file done
                     handle.close()
                     self.printToLog("Wrote %i records to %s" % (cnt, filename))
+                    self.app.log.update()
+                    time.sleep(1)
                     file_count2 += 1
                     b="_"+str(file_count2)
                     c='_2.fastq'
@@ -1831,6 +1852,8 @@ class Core:
     def HostAlignment(self):
         self.printToLog('Starting Host Alignment...')
         os.chdir(self.HostRefFolder)
+        if self.disableOverlapAlignment:
+            self.overlapRequested = False
         try:
             self.app.update()
             if not os.path.exists(self.runDirectory):
@@ -2244,8 +2267,10 @@ class Core:
     #The similarity level is set in the configurations.
     #---------------------------------------------------------------------------------------------------
     def checkSimilarity(self, seq1, seq2, host_length1=0, host_length2=0):
+        if self.disableSimilarityCheck:
+            similarityFound = False
+            return similarityFound
         similarityFound=False
-        return False
         a = len(seq1)
         b = len(seq2)
         if (abs(a-b))<=6: # only check for length difference <= 6 to save check time
@@ -3109,6 +3134,9 @@ class Interface(tk.Frame):
     pairedReads=True
     filtered=False
     useBasic=False
+    disableSimilarityCheck=False
+    disableOverlapAlignment=False
+    removeSplitFiles=False
     filteredReroute=[]
     releaseVersion = "del"
     currentConfigEntry=None
@@ -3343,7 +3371,7 @@ class Interface(tk.Frame):
 
         self.OptionsWin=tk.Toplevel(self.master)
         self.OptionsWin.title('Configurations')
-        self.OptionsWin.geometry('390x360')   
+        self.OptionsWin.geometry('390x420')   
         self.OptionsWin.wm_attributes("-topmost", 1)   
         self.OptionsWin.protocol('WM_DELETE_WINDOW',self.OptionsWin.withdraw)
         self.OptionsWin.withdraw()
@@ -3537,7 +3565,24 @@ class Interface(tk.Frame):
         self.useBasicBttn=tk.Button(self.OptionsWin,text = "False", command=self.switchBasic)
         self.useBasicBttn.grid(row=16,column=1,columnspan=1,sticky=tk.W+tk.E)
         
+        self.disableSimilarityCheckLabel=tk.Text(self.OptionsWin,height=1,width=30,state=tk.DISABLED,relief=tk.FLAT,background=self.defaultbg)
+        self.disableSimilarityCheckLabel.grid(row=17,column=0,columnspan=1,sticky=tk.W)
+        self.changeLabel(self.disableSimilarityCheckLabel,'Disable Similarity Check:')
+        self.disableSimilarityCheckBttn=tk.Button(self.OptionsWin,text = "False", command=self.switchSimilarityCheck)
+        self.disableSimilarityCheckBttn.grid(row=17,column=1,columnspan=1,sticky=tk.W+tk.E)
         
+        self.disableOverlapAlignmentLabel=tk.Text(self.OptionsWin,height=1,width=30,state=tk.DISABLED,relief=tk.FLAT,background=self.defaultbg)
+        self.disableOverlapAlignmentLabel.grid(row=18,column=0,columnspan=1,sticky=tk.W)
+        self.changeLabel(self.disableOverlapAlignmentLabel,'Disable H/V Overlap Alignment:')
+        self.disableOverlapAlignmentLabelBttn=tk.Button(self.OptionsWin,text = "False", command=self.switchOverlapAlignment)
+        self.disableOverlapAlignmentLabelBttn.grid(row=18,column=1,columnspan=1,sticky=tk.W+tk.E)
+        """
+        self.removeSplitFilesLabel=tk.Text(self.OptionsWin,height=1,width=30,state=tk.DISABLED,relief=tk.FLAT,background=self.defaultbg)
+        self.removeSplitFilesLabel.grid(row=19,column=0,columnspan=1,sticky=tk.W)
+        self.changeLabel(self.removeSplitFilesLabel,'Remove Split Files:')
+        self.removeSplitFilesBttn=tk.Button(self.OptionsWin,text = "False", command=self.switchRemoveSplitFiles)
+        self.removeSplitFilesBttn.grid(row=19,column=1,columnspan=1,sticky=tk.W+tk.E)
+        """
         self.NewWin=tk.Toplevel(self.master)
         self.NewWin.title('Location Options')
         self.NewWin.geometry('620x490')
@@ -3794,6 +3839,33 @@ class Interface(tk.Frame):
             self.changeBttnText(self.useBasicBttn,'False')
             self.printToLog('Using Salt Adjusted Melt Temperatures for Filtering')
         self.listRedraw()
+
+    def switchSimilarityCheck(self):
+        self.disableSimilarityCheck=not self.disableSimilarityCheck
+        if self.disableSimilarityCheck:
+            self.changeBttnText(self.disableSimilarityCheckBttn, 'True')
+            self.printToLog('disable similarity check')
+        else:
+            self.changeBttnText(self.disableSimilarityCheckBttn, 'False')
+            self.printToLog('enable similarity check')
+
+    def switchOverlapAlignment(self):
+        self.disableOverlapAlignment=not self.disableOverlapAlignment
+        if self.disableOverlapAlignment:
+            self.changeBttnText(self.disableOverlapAlignmentLabelBttn, 'True')
+            self.printToLog('disable overlap alignment')
+        else:
+            self.changeBttnText(self.disableOverlapAlignmentLabelBttn, 'False')
+            self.printToLog('enable overlap alignment')
+
+    def switchRemoveSplitFiles(self):
+        self.removeSplitFiles=not self.removeSplitFiles
+        if self.removeSplitFiles:
+            self.changeBttnText(self.removeSplitFilesBttn, 'True')
+            self.printToLog('enable split files removal')
+        else:
+            self.changeBttnText(self.removeSplitFilesBttn, 'False')
+            self.printToLog('disable split files removal')
             
     def selectDirToggle(self):
         self.changeLabel(self.fastqBox,"")
