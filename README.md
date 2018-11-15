@@ -39,4 +39,7 @@ Execution:
 <br><br>
 ChimericSeq_del screenshot
 <br><image src="ChimericSeq_del.png" width="700">
+<br><br>
+The user guide for the original ChimericSeq can be found at http://www.jbs-science.com/ChimericSeq.php.
+ 
 
