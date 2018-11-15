@@ -31,6 +31,8 @@ DriverFinder screentshot
 Execution: 
 <br>run the 'ChimericSeq_del.exe' code under the folder where the application is installed.
 <br><br>
+<br>
+
 <br>Windows or Mac environment
 <br>===============================
 <br> 1. Make sure that Python 3.x is installed.
@@ -41,5 +43,7 @@ ChimericSeq_del screenshot
 <br><image src="ChimericSeq_del.png" width="700">
 <br><br>
 The user guide for the original ChimericSeq can be found at http://www.jbs-science.com/ChimericSeq.php.
- 
+<br><br> To use ChimericSeq_del to identify large deletion, the user need to use viral reference for both "Host" & "Viral" references and set Configuration "Disable H/V Overlap Alignment" to be True.
+<br> 
+<br><image src="disable_overlapping.png" width="700">
 
